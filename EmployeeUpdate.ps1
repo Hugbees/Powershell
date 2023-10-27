@@ -14,7 +14,7 @@ $lookupTable = @{
         'Remote-SF'         = 'Remote - San Francisco'
         'Remote-Berlin'     = 'Remote - Berlin'
         'Zip code'          = 'Zipcode'
-        'Employee #'        = 'EmployeeID'
+        'Employee #'        = 'EmployeeID' sub
         'Cost Center'       = 'CostCenter'
         'Sales Segment'     = 'SalesSegment'
         'Home Email'        = 'HomeEmail'
@@ -33,7 +33,7 @@ $Date = Get-date
 $Nochanges = $true
 
 #Slack webhook for notifications
-$SlackChannelUri =  "https://hooks.slack.com/services/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"
+$SlackChannelUri =  "https://examplewebhook.url.com"
 #Slack notification preamble
     $Startmsg = @"
         {
@@ -63,8 +63,8 @@ $Emptymsg = @"
 
 #Imports CSV exported from BambooHR to $OriginalCSV, and sets formatted output to $NewCSV
 
-$OriginalCSV = "C:\ProgramData\UserDataFolders\$sid\My Files\Google Drive\Shared Drives\Team Technology\IT Operations\NewHireScript\AllEmployees_(Culture_Amp).csv"
-$NewCSV = "C:\ProgramData\UserDataFolders\$sid\My Files\Google Drive\Shared Drives\Team Technology\IT Operations\NewHireScript\AllEmployeesFormatted.csv"
+$OriginalCSV = "C:\Example\FilePath\$sid\My Files\Google Drive\Shared Drives\ExampleDrive\AllEmployees.csv"
+$NewCSV = "C:\Example\FilePath\$sid\My Files\Google Drive\Shared Drives\ExampleDrive\AllEmployees_Formatted.csv"
 
 #Runs data in $OriginalCSV and replaces problematic entries, then outputs to $NewCSV file location
 
@@ -101,7 +101,7 @@ function Remove-StringLatinCharacters
     #>
 
 #Imports our freshly created properly formatted CSV
-$AllEmployees = Import-Csv "C:\ProgramData\UserDataFolders\$sid\My Files\Google Drive\Shared Drives\Team Technology\IT Operations\NewHireScript\AllEmployeesFormatted.csv"
+$AllEmployees = Import-Csv "C:\Example\FilePath\$sid\My Files\Google Drive\Shared Drives\ExampleDrive\AllEmployees_Formatted.csv"
 
   Foreach ($User in $AllEmployees){
     $Firstname = $User.FirstName
@@ -110,10 +110,10 @@ $AllEmployees = Import-Csv "C:\ProgramData\UserDataFolders\$sid\My Files\Google 
     $Division = $User.division    
     $Position = $User.Position
     $Location = $User.location
-    $TempOU = "OU=TempNewUsers,OU=Users,OU=cultureamp,DC=cultureamp,DC=net"
+    $TempOU = "OU=TempNewUsers,OU=Users,OU=exampledomain,DC=exampledomain,DC=net"
     $Zip = $User.zipcode -replace " ",""
-    $contractorOU = "OU=Contractors,OU=Users,OU=cultureamp,DC=cultureamp,DC=net"
-    $UserOU = "OU=Employees,OU=Users,OU=cultureamp,DC=cultureamp,DC=net"
+    $contractorOU = "OU=Contractors,OU=Users,OU=exampledomain,DC=exampledomain,DC=net"
+    $UserOU = "OU=Employees,OU=Users,OU=exampledomain,DC=exampledomain,DC=net"
     $Lastname = $User.Lastname
     $Camp = $User.camp
     $EmployeeID = $User.employeeid
@@ -129,7 +129,7 @@ $AllEmployees = Import-Csv "C:\ProgramData\UserDataFolders\$sid\My Files\Google 
     $HireDate = $user.hiredate
     $Hiredate = [datetime]::ParseExact($hiredate, "dd MMM yyyy", $null).tostring('yyyy-MM-dd')
     #Check user manager against CSV of managers with usernames that don't follow firstname.lastname format
-    $Mgr = Import-CSV "C:\ProgramData\UserDataFolders\$sid\My Files\Google Drive\Shared Drives\Team Technology\IT Operations\NewHireScript\CSVs\Managers.csv" | ForEach-Object {
+    $Mgr = Import-CSV "C:\Example\FilePath\$sid\My Files\Google Drive\Shared Drives\ExampleDrive\Managers.csv" | ForEach-Object {
     $MgrOld = $_.mgrold
     $MgrNew = $_.mgrnew
         if($Manager -match $MgrOld){
@@ -663,7 +663,7 @@ if ($Nochanges -eq $true){
 <# try{New-ADuser -Name "$Name"`
     -Displayname "$Name"`
     -SamAccountName "$Sam" `
-    -Userprincipalname "$Sam@cultureamp.net"`
+    -Userprincipalname "$Sam@exampledomain.net"`
     -GivenName "$Givenname" `
     -emailaddress "$Email"`
     -Surname "$surname" `
