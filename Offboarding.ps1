@@ -1,12 +1,12 @@
 #Pulls the SID of the account running the script, which is needed for the file path when running from an AWS AppStream box
 $SID = Get-AdUser -Identity "$env:username"  | Select -ExpandProperty sid
 # Starts a text log of the actions in the script. Appends existing log, if there is one
-Start-Transcript -Path "C:\ProgramData\UserDataFolders\$sid\My Files\Google Drive\Shared Drives\Team Technology\IT Operations\OffboardingTool\logs\Offboarding_$(get-date -f yyyy-MM-dd).log" -append -force
+Start-Transcript -Path "C:\ExampleGoogleDrive\$sid\My Files\Google Drive\Shared Drives\Technology\OffboardingTool\logs\Offboarding_$(get-date -f yyyy-MM-dd).log" -append -force
 Import-module ActiveDirectory
 
 $title = ""
-$message = "Do you want to offboard another camper?"
-Write-host -foregroundcolor Cyan "Camper Offboarding"
+$message = "Do you want to offboard another employee?"
+Write-host -foregroundcolor Cyan "Employee Offboarding"
 
 $yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes", `
     "Prompts for another user"
@@ -67,7 +67,7 @@ $options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no)
         $password = Get-RandomPassword 12
         $Account = Read-Host -Prompt "Enter username of Camper to be offboarded"
         try{
-        $DisabledUsers = "OU=Disabled Users,OU=Users,OU=cultureamp,DC=cultureamp,DC=net"
+        $DisabledUsers = "OU=Disabled Users,OU=Users,OU=ExampleDomain,DC=ExampleDomain,DC=net"
         $AccountDN = Get-ADUser -identity $Account -server "Mainframe-B01" | select $_.DistinguishedName
         Write-host -ForegroundColor gray "Disabling $Account..."
         if ($(get-aduser $accountDN).enabled -eq $true){
@@ -94,7 +94,7 @@ switch ($result)
         }
     }
     catch{write-host -ForegroundColor red "`n$_"
-        write-host -ForegroundColor red "`nPlease confirm the username was entered correctly and try again."
+        write-host -ForegroundColor red "`nAn Error occured. Please check the logs for more information."
         }
     }
 }
