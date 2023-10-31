@@ -12,11 +12,9 @@ $ErrorOccured = $false
 
 #Set $runby variable to the first and last name of the person who ran the script, to be reported in the preamble
 $RunBy = whoami
-$Runby = $runBy.replace("cultureamp\","").replace("-adm","").replace("."," ")
+$Runby = $runBy.replace("ExampleDomain\","").replace("-adm","").replace("."," ")
 $TextInfo = (Get-Culture).TextInfo
 $runby = $TextInfo.ToTitleCase($runby)
-#Fix Brian's name
-$runby = $runby.replace("Brian Barrett","Brian Seymour")
 
 #Pulls the SID of the account running the script, which is needed for the file path when running from an AWS AppStream box
 $SID = Get-AdUser -Identity "$env:username"  | Select -ExpandProperty sid
@@ -43,8 +41,8 @@ $lookupTable = @{
 
 #Imports CSV exported from BambooHR to $OriginalCSV, and sets formatted output to $NewCSV
 
-$OriginalCSV = "C:\ProgramData\UserDataFolders\$sid\My Files\Google Drive\Shared Drives\Team Technology\IT Operations\NewHireScript\New_Hires_full_(Culture_Amp).csv"
-$NewCSV = "C:\ProgramData\UserDataFolders\$sid\My Files\Google Drive\Shared Drives\Team Technology\IT Operations\NewHireScript\NewHiresFormatted.csv"
+$OriginalCSV = "C:\ExampleGoogleDrive\$sid\My Files\Google Drive\Shared Drives\Technology\NewHireScript\New_Hires_full_(Example_Company).csv"
+$NewCSV = "C:\ExampleGoogleDrive\$sid\My Files\Google Drive\Shared Drives\Technology\NewHireScript\NewHiresFormatted.csv"
 
 #Runs data in $OriginalCSV and replaces problematic entries, then outputs to $NewCSV file location
 
@@ -81,18 +79,18 @@ function Remove-StringLatinCharacters
     #>
 
 #Imports our freshly created properly formatted CSV
-$NewUsers = Import-Csv "C:\ProgramData\UserDataFolders\$sid\My Files\Google Drive\Shared Drives\Team Technology\IT Operations\NewHireScript\NewHiresFormatted.csv"
+$NewUsers = Import-Csv "C:\ExampleGoogleDrive\$sid\My Files\Google Drive\Shared Drives\Technology\NewHireScript\NewHiresFormatted.csv"
 
 # Starts a text log of the actions in the script. Appends existing log, if there is one
-Start-Transcript -Path "C:\ProgramData\UserDataFolders\$sid\My Files\Google Drive\Shared Drives\Team Technology\IT Operations\NewHireScript\logs\NewUsers_$(get-date -f yyyy-MM-dd).log" -append -force
+Start-Transcript -Path "C:\ExampleGoogleDrive\$sid\My Files\Google Drive\Shared Drives\Technology\NewHireScript\logs\NewUsers_$(get-date -f yyyy-MM-dd).log" -append -force
 
 
 #Slack message preamble
-    $SlackChannelUri =  "https://hooks.slack.com/services/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" 
+    $SlackChannelUri =  "https://example.slackwebhook.com" 
 
     $Startmsg = @"
         {
-        "pretext": ":camping: *New Camper account creation script* :camping:\nExecuted by RUNBY",
+        "pretext": ":camping: *New Employee account creation script* :camping:\nExecuted by RUNBY",
         "color": "#C0392B",
             }
 "@
@@ -109,10 +107,10 @@ Start-Transcript -Path "C:\ProgramData\UserDataFolders\$sid\My Files\Google Driv
     $Division = $User.division    
     $Position = $User.Position
     $Location = $User.location
-    $TempOU = "OU=TempNewUsers,OU=Users,OU=cultureamp,DC=cultureamp,DC=net"
+    $TempOU = "OU=TempNewUsers,OU=Users,OU=ExampleDomain,DC=ExampleDomain,DC=net"
     $Zip = $User.zipcode -replace " ",""
-    $contractorOU = "OU=Contractors,OU=Users,OU=cultureamp,DC=cultureamp,DC=net"
-    $UserOU = "OU=Employees,OU=Users,OU=cultureamp,DC=cultureamp,DC=net"
+    $contractorOU = "OU=Contractors,OU=Users,OU=ExampleDomain,DC=ExampleDomain,DC=net"
+    $UserOU = "OU=Employees,OU=Users,OU=ExampleDomain,DC=ExampleDomain,DC=net"
     $Lastname = $User.Lastname
     $Camp = $User.camp
     $EmployeeID = $User.employeeid
@@ -125,7 +123,7 @@ Start-Transcript -Path "C:\ProgramData\UserDataFolders\$sid\My Files\Google Driv
     $Hiredate = [datetime]::ParseExact($hiredate, "dd MMM yyyy", $null).tostring('yyyy-MM-dd') 
     
 #Check user manager against CSV of managers with usernames that don't follow firstname.lastname format
-    $Mgr = Import-CSV "C:\ProgramData\UserDataFolders\$sid\My Files\Google Drive\Shared Drives\Team Technology\IT Operations\NewHireScript\CSVs\Managers.csv" | ForEach-Object {
+    $Mgr = Import-CSV "5\NewHireScript\CSVs\Managers.csv" | ForEach-Object {
     $MgrOld = $_.mgrold
     $MgrNew = $_.mgrnew
         if($Manager -match $MgrOld){
@@ -337,13 +335,13 @@ If ([string]::IsNullOrWhitespace($AltName)){
 
 #Set SAM, Name, Givenname, Surname and Email. Uses preferred name if $altname is not empty
 If ([string]::IsNullOrWhitespace($AltName)){
-    $Email = "$SamAcc@cultureamp.com"
+    $Email = "$SamAcc@ExampleDomain.com"
     $Name = "$Firstname $Lastname"
     $Givenname = "$Firstname"
     $Surname = "$Lastname"
 }
 else{
-    $Email = "$AltSamAcc@cultureamp.com"
+    $Email = "$AltSamAcc@ExampleDomain.com"
     $Name = "$Altfirst $AltLast"
     $Givenname = "$AltFirst"
     $Surname = "$AltLast"
@@ -364,7 +362,7 @@ $Email = $Email| Remove-StringLatinCharacters
     try{New-ADuser -Name "$Name"`
     -Displayname "$Name"`
     -SamAccountName "$Sam" `
-    -Userprincipalname "$Sam@cultureamp.net"`
+    -Userprincipalname "$Sam@ExampleDomain.net"`
     -GivenName "$Givenname" `
     -emailaddress "$Email"`
     -Surname "$surname" `
@@ -533,6 +531,6 @@ foreach ($user in $results){
 #Clean up CSVs that have been generated by the script, and delete the original BambooHR report
 
 if ($ErrorOccured -ne $true){
-    Remove-Item -Path "C:\ProgramData\UserDataFolders\$sid\My Files\Google Drive\Shared Drives\Team Technology\IT Operations\NewHireScript\New_Hires_full_(Culture_Amp).csv" -Force
+    Remove-Item -Path "C:\ExampleGoogleDrive\$sid\My Files\Google Drive\Shared Drives\Technology\NewHireScript\New_Hires_full_(Example_Company).csv" -Force
     }
-Remove-Item -Path "C:\ProgramData\UserDataFolders\$sid\My Files\Google Drive\Shared Drives\Team Technology\IT Operations\NewHireScript\NewHiresFormatted.csv" -Force
+Remove-Item -Path "C:\ExampleGoogleDrive\$sid\My Files\Google Drive\Shared Drives\Technology\NewHireScript\NewHiresFormatted.csv" -Force
